@@ -73,9 +73,11 @@ export unified(
 ): String {
     var old_lines = split_lines(a);
     var new_lines = split_lines(b);
-    var edits = myers(old_lines, new_lines);
+    var edits: Edit[];
     if (algorithm == Algorithm.Patience) {
         edits = patience(old_lines, new_lines);
+    } else {
+        edits = myers(old_lines, new_lines);
     }
     var out = StringBuilder();
     var first = 0 as ulong;
@@ -85,13 +87,14 @@ export unified(
             continue;
         }
         # The hunk covers the changes from `first` to `last`, and the
-        # unchanged runs between them, each at most 2 * context long.
+        # unchanged runs between them, each at most 2 * context long
+        # (written so that a huge context cannot overflow).
         var last = first;
         while (last + 1 < edits.count) {
             var next = edits[last + 1];
             if (next.kind != EditKind.Equal) {
                 last += 1;
-            } else if (next.count <= 2 * context && last + 2 < edits.count) {
+            } else if ((next.count + 1) / 2 <= context && last + 2 < edits.count) {
                 last += 2;
             } else {
                 break;

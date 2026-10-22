@@ -59,6 +59,8 @@ splits_lines_with_their_endings() {
 [Test]
 equal_texts_give_an_empty_diff() {
     expect_equal(diff.unified("a\nb\n", "a\nb\n"), "");
+    # A context too big to double still puts every change in one hunk.
+    expect_equal(diff.unified("a\nb\nc\n", "A\nb\nC\n", 0xffffffffffffffff), diff.unified("a\nb\nc\n", "A\nb\nC\n", 5));
     expect_equal(diff.apply("a\nb\n", "").value(), "a\nb\n");
 }
 
@@ -122,6 +124,12 @@ rejects_a_malformed_patch() {
     var text = "a\nb\n";
     expect_equal(diff.apply(text, "@@ -x +1 @@\n").error().message, "patch line 1: malformed hunk header");
     expect_equal(diff.apply(text, "@@ -1 +1\n").error().message, "patch line 1: malformed hunk header");
+    expect_equal(
+        diff.apply(text, "@@ -18446744073709551615,2 +1,2 @@\n a\n b\n").error().message,
+        "patch line 1: the hunk runs past the end of the text, which has 2 lines"
+    );
+    # The signature `git format-patch` ends with is not a line of the hunk.
+    expect_equal(diff.apply(text, "@@ -1 +1 @@\n-a\n+A\n-- \n2.46.0\n").value(), "A\nb\n");
     expect_equal(
         diff.apply(text, "@@ -1,2 +1,2 @@\n a\n").error().message,
         "patch line 1: the hunk has fewer lines than its header counts"

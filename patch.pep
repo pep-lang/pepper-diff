@@ -104,7 +104,8 @@ export apply(text: String, patch: String): Result<String> {
         if (start < position) {
             return Result<String>.err($"patch line {header + 1}: the hunk overlaps or comes before the one above it");
         }
-        if (start + old_count > lines.count) {
+        # Not `start + old_count`, which a huge header would overflow.
+        if (start > lines.count || old_count > lines.count - start) {
             return Result<String>.err(
                 $"patch line {header + 1}: the hunk runs past the end of the text, which has {lines.count} lines"
             );
@@ -169,7 +170,8 @@ _range_of(text: String): (ulong, ulong)? {
 # Whether `line` reads as a line of a hunk rather than the header of the
 # next file's diff.
 _is_body_line(line: String): bool {
-    if (line.starts_with("--- ") || line.starts_with("+++ ")) {
+    # "-- " is the signature `git format-patch` ends a patch with.
+    if (line.starts_with("--- ") || line.starts_with("+++ ") || line == "-- \n") {
         return false;
     }
     return line.starts_with(" ") || line.starts_with("-") || line.starts_with("+");

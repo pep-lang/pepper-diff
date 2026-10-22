@@ -115,8 +115,8 @@ projects that depend on this one do not fetch it.
 ## Performance
 
 Two texts of 10,000 lines that differ in about 300 places (413 lines
-deleted or inserted): `unified` takes 4.4 ms with Myers and 7.4 ms with
-patience, and `apply` 1.4 ms (best of 9, `-O`, Windows 11, Pepper 0.10.1).
+deleted or inserted): `unified` takes 4.6 ms with Myers and 4.5 ms with
+patience, and `apply` 1.5 ms (best of 9, `-O`, Windows 11, Pepper 0.10.1).
 
 ## Releasing
 

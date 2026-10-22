@@ -55,28 +55,30 @@ check_script<T>(a: T[], b: T[], edits: diff.Edit[], location: __ptr<char> = __ca
     var i = 0 as ulong;
     var j = 0 as ulong;
     var changed = 0 as ulong;
-    var previous = diff.EditKind.Insert;
+    var first = true;
+    var previous = diff.EditKind.Equal;
     for (var edit in edits) {
         expect_true(edit.count > 0, location);
         expect_equal(edit.a_start, i, location);
         expect_equal(edit.b_start, j, location);
         if (edit.kind == diff.EditKind.Equal) {
-            expect_true(previous != diff.EditKind.Equal, location);
+            expect_true(first || previous != diff.EditKind.Equal, location);
             for (var k in 0..edit.count) {
                 expect_true(a[i + k] == b[j + k], location);
             }
             i += edit.count;
             j += edit.count;
         } else if (edit.kind == diff.EditKind.Delete) {
-            expect_true(previous == diff.EditKind.Equal || edits[0] === edit, location);
+            expect_true(previous == diff.EditKind.Equal, location);
             i += edit.count;
             changed += edit.count;
         } else {
-            expect_true(previous != diff.EditKind.Insert || edits[0] === edit, location);
+            expect_true(previous != diff.EditKind.Insert, location);
             j += edit.count;
             changed += edit.count;
         }
         previous = edit.kind;
+        first = false;
     }
     expect_equal(i, a.count, location);
     expect_equal(j, b.count, location);
