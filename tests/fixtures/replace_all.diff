@@ -1,0 +1,6 @@
+--- a/replace_all.old
++++ b/replace_all.new
+@@ -1 +1,2 @@
+-x
++y
++z
